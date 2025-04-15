@@ -18,7 +18,7 @@ HF_TOKEN = os.getenv("HF_API_TOKEN")  # Set your token in environment variables
 
 
 # chroma_client = chromadb.Client(Settings(allow_reset=True)) # Data vanishes when program ends
-chroma_client = chromadb.PersistentClient(path="./chroma_db")  # Data saved to disk
+chroma_client = chromadb.PersistentClient(path="./chroma_db",  allow_reset=True)  # Data saved to disk
 # chroma_client.reset()
 # Create or get the collection
 collection = chroma_client.get_or_create_collection(name="knowledge_base")
