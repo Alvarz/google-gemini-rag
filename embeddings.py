@@ -10,12 +10,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-embedding_model=os.getenv('EMBEDDING_MODEL')
-
-
+EMBEDDING_MODEL=os.getenv('EMBEDDING_MODEL')
 HF_API_URL = os.getenv('HF_API_EMBEDDING_MODEL_URL')
 HF_TOKEN = os.getenv("HF_API_TOKEN")  # Set your token in environment variables
-
 
 # chroma_client = chromadb.Client(Settings(allow_reset=True)) # Data vanishes when program ends
 chroma_client = chromadb.PersistentClient(path="./chroma_db",  allow_reset=True)  # Data saved to disk
@@ -39,7 +36,7 @@ def get_hf_embeddings(texts: List[str]) -> List[List[float]]:
     """Get embeddings from Hugging Face free API"""
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     response = requests.post(
-        HF_API_URL + "/" + embedding_model,
+        HF_API_URL + "/" + EMBEDDING_MODEL,
         headers=headers,
         json={"inputs": texts, "options": {"wait_for_model": True}}
     )
@@ -47,10 +44,9 @@ def get_hf_embeddings(texts: List[str]) -> List[List[float]]:
 
 # Step 1: Generate embeddings and store in ChromaDB
 def populate_vector_db():
-    print('populating chroma')
-    # Get embeddings from OpenAI
-    # Add to ChromaDB
+    # get embeddings from hugging face
     embeddings = get_hf_embeddings(documents)
+    # Add to ChromaDB
     collection.add(
         documents=documents,
         ids=ids,
@@ -74,7 +70,7 @@ def retrieve_documents(query, top_k=2):
 #     # Get embeddings from OpenAI
 #     embeddings = client.embeddings.create(
 #         input=documents,
-#         model=embedding_model
+#         model=EMBEDDING_MODEL
 #     ).data
     
 #     # Convert to list of lists
@@ -92,7 +88,7 @@ def retrieve_documents(query, top_k=2):
 #     # Get query embedding
 #     query_embedding = client.embeddings.create(
 #         input=[query],
-#         model=embedding_model
+#         model=EMBEDDING_MODEL
 #     ).data[0].embedding
     
 #     # Query ChromaDB

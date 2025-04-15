@@ -2,25 +2,21 @@
 
 import os
 from openai import OpenAI
-
 from embeddings import retrieve_documents 
 
 from dotenv import load_dotenv
 load_dotenv()
 
-gemini_api_key = os.getenv('GEMINI_API_KEY')
-gemini_api_url = os.getenv('GEMINI_API_URL')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+GEMINI_API_URL = os.getenv('GEMINI_API_URL')
 
 
-model = os.getenv('MODEL')
-
+MODEL = os.getenv('MODEL')
 
 client = OpenAI(
-            api_key=gemini_api_key,  # Google Gemini API key
-            base_url=gemini_api_url,  # Gemini base URL
+            api_key=GEMINI_API_KEY,  # Google Gemini API key
+            base_url=GEMINI_API_URL,  # Gemini base URL
 )
-
-
 
 def generate_answer(query):
     # Retrieve relevant documents
@@ -29,7 +25,7 @@ def generate_answer(query):
     
     # Generate response
     response = client.chat.completions.create(
-        model=model,
+        model=MODEL,
         messages=[
             {"role": "system", "content": f"Answer the question based on this context:\n{context}"},
             {"role": "user", "content": query}
