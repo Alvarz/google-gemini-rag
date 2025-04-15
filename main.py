@@ -41,8 +41,8 @@ if __name__ == "__main__":
         
         queries = [
                 "What is the capital of France?",
-                "Where is the Eiffel Tower located?",
-                "What does OpenAI develop?"
+                "What is AI?",
+                # "What does OpenAI develop?"
         ]
 
         for query in queries:

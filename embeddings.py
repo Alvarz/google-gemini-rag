@@ -6,18 +6,18 @@ from chromadb.config import Settings
 import requests
 from typing import List
 
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
 from dotenv import load_dotenv
 load_dotenv()
 
+os.environ["TOKENIZERS_PARALLELISM"] = "false"  # Disables parallelism warning of SentenceTransformer 
 
 EMBEDDING_MODEL=os.getenv('EMBEDDING_MODEL')
-HF_API_URL = os.getenv('HF_API_EMBEDDING_MODEL_URL')
-HF_TOKEN = os.getenv("HF_API_TOKEN")  # Set your token in environment variables
+embedding_model = SentenceTransformer(EMBEDDING_MODEL)  # Example lightweight model
 
-# chroma_client = chromadb.Client(Settings(allow_reset=True)) # Data vanishes when program ends
-chroma_client = chromadb.PersistentClient(path="./chroma_db",  allow_reset=True)  # Data saved to disk
-# chroma_client.reset()
-# Create or get the collection
+chroma_client = chromadb.PersistentClient(path="./chroma_db")  # Data saved to disk
 collection = chroma_client.get_or_create_collection(name="knowledge_base")
 
 documents = [
@@ -30,22 +30,15 @@ documents = [
 metadata = [{"source": f"doc_{i}"} for i in range(len(documents))]
 ids = [f"id_{i}" for i in range(len(documents))]
 
+def get_embeddings(documents):
+    # Convert documents to embeddings
+    embeddings = embedding_model.encode(documents, convert_to_tensor=False)
+    return embeddings.tolist() if hasattr(embeddings, 'tolist') else embeddings
 
 
-def get_hf_embeddings(texts: List[str]) -> List[List[float]]:
-    """Get embeddings from Hugging Face free API"""
-    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    response = requests.post(
-        HF_API_URL + "/" + EMBEDDING_MODEL,
-        headers=headers,
-        json={"inputs": texts, "options": {"wait_for_model": True}}
-    )
-    return response.json()
-
-# Step 1: Generate embeddings and store in ChromaDB
 def populate_vector_db():
     # get embeddings from hugging face
-    embeddings = get_hf_embeddings(documents)
+    embeddings = get_embeddings(documents)
     # Add to ChromaDB
     collection.add(
         documents=documents,
@@ -56,7 +49,7 @@ def populate_vector_db():
 
 def retrieve_documents(query, top_k=2):
     # Get query embedding
-    query_embedding = get_hf_embeddings([query])[0]  # Get first embedding
+    query_embedding = embedding_model.encode([query]).tolist()[0]
 
     # Query ChromaDB
     results = collection.query(
@@ -65,42 +58,29 @@ def retrieve_documents(query, top_k=2):
     )
     return results['documents'][0]
 
-## FUNCTIONS USING GEMINI EMBEDDING MODEL
-# def populate_vector_db():
-#     # Get embeddings from OpenAI
-#     embeddings = client.embeddings.create(
-#         input=documents,
-#         model=EMBEDDING_MODEL
-#     ).data
-    
-#     # Convert to list of lists
-#     embeddings_list = [e.embedding for e in embeddings]
-    
-#     # Add to ChromaDB
-#     collection.add(
-#         embeddings=embeddings_list,
-#         documents=documents,
-#         metadatas=metadata,
-#         ids=ids
-#     )
-
-# def retrieve_documents(query, top_k=2):
-#     # Get query embedding
-#     query_embedding = client.embeddings.create(
-#         input=[query],
-#         model=EMBEDDING_MODEL
-#     ).data[0].embedding
-    
-#     # Query ChromaDB
-#     results = collection.query(
-#         query_embeddings=[query_embedding],
-#         n_results=top_k
-#     )
-    
-#     return results['documents'][0]
-
 
 
 if __name__ == "__main__":
         populate_vector_db()
         print('chroma populated')
+        query_embedding = embedding_model.encode([documents[0]]).tolist()[0]
+        results = collection.query(
+            query_embeddings=[query_embedding],
+            n_results=3,
+            include=['documents', 'metadatas', 'distances']
+        )
+        
+        result = [{
+            'content': doc,
+            'metadata': meta,
+            'score': 1 - dist  # Convert distance to similarity
+        } for doc, meta, dist in zip(
+            results['documents'][0],
+            results['metadatas'][0],
+            results['distances'][0]
+        )]
+
+        print(result)
+
+
+
