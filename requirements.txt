@@ -24,7 +24,7 @@ fastapi==0.115.12
 filelock==3.18.0
 flatbuffers==25.2.10
 fsspec==2025.3.2
-google-auth==2.40.0
+google-auth==2.40.1
 googleapis-common-protos==1.70.0
 grpcio==1.71.0
 h11==0.16.0
