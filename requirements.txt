@@ -89,7 +89,7 @@ pytz==2025.2
 PyYAML==6.0.2
 referencing==0.36.2
 regex==2024.11.6
-requests==2.32.3
+requests==2.32.4
 requests-oauthlib==2.0.0
 rich==14.0.0
 rpds-py==0.24.0
@@ -109,7 +109,7 @@ threadpoolctl==3.6.0
 tiktoken==0.9.0
 tld==0.13
 tokenizers==0.21.1
-torch==2.7.0
+torch==2.7.1
 tqdm==4.67.1
 trafilatura==2.0.0
 transformers==4.51.3
