@@ -21,7 +21,7 @@ distro==1.9.0
 dotenv==0.9.9
 durationpy==0.9
 fastapi==0.115.12
-filelock==3.18.0
+filelock==3.20.1
 flatbuffers==25.2.10
 fsspec==2025.3.2
 google-auth==2.40.0
